@@ -11,7 +11,12 @@ import type { ActivityEvent, EnrichedAccount } from "@/lib/types";
 
 type Stage = "upload" | "review" | "results";
 
-let activitySeq = 0;
+function generateEventId(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `evt-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
 
 export default function Home() {
   const [stage, setStage] = useState<Stage>("upload");
@@ -59,10 +64,9 @@ export default function Home() {
 
   const pushActivity = useCallback(
     (event: Omit<ActivityEvent, "id" | "timestamp">) => {
-      activitySeq += 1;
       setActivity((prev) => [
         ...prev,
-        { ...event, id: `evt-${activitySeq}`, timestamp: Date.now() },
+        { ...event, id: generateEventId(), timestamp: Date.now() },
       ]);
     },
     [],

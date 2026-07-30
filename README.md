@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Intelligence CRM
 
-## Getting Started
+Don't migrate your CRM. Drop in your spreadsheet and get an intelligent CRM
+in 30 seconds.
 
-First, run the development server:
+Upload an existing CRM export (`.xlsx`), and the app enriches every account
+with live web research, scores it 0–100 on "AI opportunity likelihood",
+explains the score, and drafts a personalized outreach email for follow-up.
+
+## How it works
+
+1. **Upload** — drag-and-drop an `.xlsx` export. Parsed client-side with
+   `xlsx`; unknown columns are tolerated, expected ones are matched by
+   flexible header aliases (`Company`, `Contact Name`, `Contact Role`,
+   `Email`, `Sector`, `Employees`, `Region`, `Current Software`,
+   `Customer Since`, `Last Activity`, `Annual Revenue (EUR)`,
+   `Open Opportunity`, `Notes`).
+2. **Review** — every parsed row shown in a table before anything is sent
+   to the API.
+3. **Research & score** — `/api/enrich` calls Claude (`claude-sonnet-4-6`)
+   with the `web_search_20250305` tool per account, combining the CRM
+   record with live web findings into a JSON verdict. Accounts are
+   enriched with concurrency 4, with a live activity feed streaming
+   progress.
+4. **Results** — ranked list by AI opportunity score, with a
+   green/amber/gray badge. Click a row to expand full reasoning, web
+   findings, recommended action, and a ready-to-copy draft email.
+
+Everything lives in React state — no database, no auth, no server
+persistence. Re-running enrichment on an already-processed account is a
+no-op (results are cached in memory for the session).
+
+## Local development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Set `ANTHROPIC_API_KEY` in `.env.local` to enable live enrichment. Without
+it, `/api/enrich` returns a graceful fallback object so the UI never
+breaks — you'll just see score 0 and a "manual review needed" note instead
+of real research.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploying
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This repo is linked to a Vercel project. Set `ANTHROPIC_API_KEY` as an
+environment variable in the Vercel project settings (Production +
+Preview), then `vercel --prod`.
