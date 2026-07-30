@@ -16,6 +16,12 @@ export interface Account {
   paymentStatus: string;
   npsScore: number;
   notes: string;
+  /** "Business" | "Enterprise" — parsed from the sheet, or derived from
+   * revenue vs. pricingConfig.tierGateRevenueMillions when absent. */
+  pricingTier: string;
+  /** Parsed from "Est. License ARR (USD)", or estimated from pricingConfig
+   * (tier base price) when absent/zero. */
+  estLicenseARRUSD: number;
   extra: Record<string, string>;
 }
 
@@ -93,3 +99,27 @@ export interface ActivityEvent {
 // --- Tab 3: innovation partner invite ---
 
 export type InviteCache = Record<string, CacheEntry<DraftEmail>>;
+
+// --- Pipeline funnel ---
+
+export type PipelineKind = "ecomm" | "innovation";
+
+export const PIPELINE_STAGES = [
+  { id: "identified", label: "Opportunity Identified", probability: 0.1 },
+  { id: "reachout", label: "Automated AI Reachout", probability: 0.2 },
+  { id: "meeting", label: "Meeting Booked", probability: 0.4 },
+  { id: "sent", label: "Opportunity Sent", probability: 0.6 },
+  { id: "paid", label: "Paid — In Production", probability: 0.9 },
+  { id: "won", label: "Closed Won", probability: 1.0 },
+] as const;
+
+export type ColumnStageId = (typeof PIPELINE_STAGES)[number]["id"];
+export type StageId = ColumnStageId | "lost";
+
+export type StageMap = Record<string, StageId>;
+
+export interface MeetingPrepResult {
+  bullets: string[];
+}
+
+export type MeetingPrepCache = Record<string, CacheEntry<MeetingPrepResult>>;

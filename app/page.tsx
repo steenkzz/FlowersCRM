@@ -6,6 +6,7 @@ import QualifiedLeadsTab from "@/components/tabs/QualifiedLeadsTab";
 import EcommOpportunitiesTab from "@/components/tabs/EcommOpportunitiesTab";
 import InnovationPartnersTab from "@/components/tabs/InnovationPartnersTab";
 import { parseExcelFile } from "@/lib/excel";
+import { DEFAULT_PRICING_CONFIG, type PricingConfig } from "@/lib/pricing";
 import { DEFAULT_WEIGHTS } from "@/lib/types";
 import type { Account, MetricWeights } from "@/lib/types";
 
@@ -19,6 +20,9 @@ const TABS: { id: TabId; label: string }[] = [
 
 export default function Home() {
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [pricingConfig, setPricingConfig] = useState<PricingConfig>({
+    ...DEFAULT_PRICING_CONFIG,
+  });
   const [weights, setWeights] = useState<MetricWeights>({ ...DEFAULT_WEIGHTS });
   const [activeTab, setActiveTab] = useState<TabId>("leads");
   const [isParsing, setIsParsing] = useState(false);
@@ -29,7 +33,11 @@ export default function Home() {
     setParseError(null);
     setIsParsing(true);
     try {
-      const { accounts: parsed, rowCount } = await parseExcelFile(file);
+      const {
+        accounts: parsed,
+        pricingConfig: parsedPricing,
+        rowCount,
+      } = await parseExcelFile(file);
       if (rowCount === 0) {
         setParseError(
           "No usable rows found. Check that the first sheet has a header row.",
@@ -37,6 +45,7 @@ export default function Home() {
         setAccounts([]);
       } else {
         setAccounts(parsed);
+        setPricingConfig(parsedPricing);
         setFileName(file.name);
       }
     } catch {
@@ -50,6 +59,7 @@ export default function Home() {
 
   const reset = useCallback(() => {
     setAccounts([]);
+    setPricingConfig({ ...DEFAULT_PRICING_CONFIG });
     setFileName(null);
     setWeights({ ...DEFAULT_WEIGHTS });
     setActiveTab("leads");
