@@ -126,7 +126,9 @@ export default function Home() {
                 onWeightsChange={setWeights}
               />
             )}
-            {activeTab === "ecomm" && <EcommOpportunitiesTab />}
+            {activeTab === "ecomm" && (
+              <EcommOpportunitiesTab accounts={accounts} />
+            )}
             {activeTab === "innovation" && <InnovationPartnersTab />}
           </>
         )}
