@@ -6,6 +6,7 @@ import QualifiedLeadsTab from "@/components/tabs/QualifiedLeadsTab";
 import EcommOpportunitiesTab from "@/components/tabs/EcommOpportunitiesTab";
 import InnovationPartnersTab from "@/components/tabs/InnovationPartnersTab";
 import PipelineTab from "@/components/tabs/PipelineTab";
+import AutopilotTab from "@/components/tabs/AutopilotTab";
 import { parseExcelFile } from "@/lib/excel";
 import { DEFAULT_PRICING_CONFIG, type PricingConfig } from "@/lib/pricing";
 import { DEFAULT_WEIGHTS } from "@/lib/types";
@@ -19,13 +20,14 @@ import type {
   MetricWeights,
 } from "@/lib/types";
 
-type TabId = "leads" | "ecomm" | "innovation" | "pipeline";
+type TabId = "leads" | "ecomm" | "innovation" | "pipeline" | "autopilot";
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "leads", label: "Qualified Leads" },
   { id: "ecomm", label: "E-Commerce Opportunities" },
   { id: "innovation", label: "Innovation Partners" },
   { id: "pipeline", label: "Pipeline" },
+  { id: "autopilot", label: "Autopilot" },
 ];
 
 export default function Home() {
@@ -203,6 +205,9 @@ export default function Home() {
                 inviteCache={inviteCache}
                 onUpdateInviteCache={updateInviteCache}
               />
+            </div>
+            <div className={activeTab === "autopilot" ? "contents" : "hidden"}>
+              <AutopilotTab accounts={accounts} pricingConfig={pricingConfig} />
             </div>
           </>
         )}
