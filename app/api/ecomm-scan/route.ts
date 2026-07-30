@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import {
+  DEFAULT_PRICING_CONFIG,
+  projectSeatGrowth,
+  resolveTier,
+  type PricingConfig,
+} from "@/lib/pricing";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -14,7 +20,9 @@ interface ScanRequestBody {
   annualRevenueUSD?: number;
   revenueGrowthYoY?: number;
   customersOnFile?: number;
+  pricingTier?: string;
   notes?: string;
+  pricingConfig?: PricingConfig;
 }
 
 interface ScanResult {
@@ -29,22 +37,26 @@ interface ScanResult {
 }
 
 const COMMISSION_RATE = 0.01;
-const REVENUE_PER_NEW_SEAT = 2_000_000;
 
 function computeDerivedFields(
   estOnlineGMV: number,
   body: ScanRequestBody,
 ): { commissionRevenueForUs: number; projectedNewSeats: number } {
   const gmv = Number.isFinite(estOnlineGMV) ? Math.max(0, estOnlineGMV) : 0;
-  const revenue = body.annualRevenueUSD ?? 0;
-  const growthPct = body.revenueGrowthYoY ?? 0;
-  const projectedGrowthUSD = Math.max(0, revenue * (growthPct / 100));
+  const pricingConfig = body.pricingConfig ?? DEFAULT_PRICING_CONFIG;
+  const tier = resolveTier(
+    body.pricingTier ?? "",
+    body.annualRevenueUSD ?? 0,
+    pricingConfig,
+  );
+  const { extraSeats } = projectSeatGrowth(
+    tier,
+    body.revenueGrowthYoY ?? 0,
+    pricingConfig,
+  );
   return {
     commissionRevenueForUs: Math.round(gmv * COMMISSION_RATE),
-    projectedNewSeats: Math.max(
-      0,
-      Math.round(projectedGrowthUSD / REVENUE_PER_NEW_SEAT),
-    ),
+    projectedNewSeats: Math.round(extraSeats),
   };
 }
 

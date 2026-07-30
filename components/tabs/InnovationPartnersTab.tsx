@@ -2,18 +2,22 @@
 
 import { useMemo, useState } from "react";
 import { formatUSD } from "@/lib/format";
-import type { Account, InviteCache } from "@/lib/types";
+import { fetchInvite } from "@/lib/invite";
+import type { Account, CacheEntry, DraftEmail, InviteCache } from "@/lib/types";
 
 interface InnovationPartnersTabProps {
   accounts: Account[];
+  cache: InviteCache;
+  onUpdateCache: (accountId: string, entry: CacheEntry<DraftEmail>) => void;
 }
 
 const TOP_N = 10;
 
 export default function InnovationPartnersTab({
   accounts,
+  cache,
+  onUpdateCache,
 }: InnovationPartnersTabProps) {
-  const [cache, setCache] = useState<InviteCache>({});
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const topCandidates = useMemo(
@@ -26,25 +30,13 @@ export default function InnovationPartnersTab({
   );
 
   async function draftInvite(account: Account) {
-    setCache((prev) => ({ ...prev, [account.id]: { status: "loading" } }));
+    onUpdateCache(account.id, { status: "loading" });
     try {
-      const res = await fetch("/api/invite", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          accountName: account.accountName,
-          contactName: account.contactName,
-          contactRole: account.contactRole,
-          avgCustomWorkValueUSD: account.avgCustomWorkValueUSD,
-          notes: account.notes,
-        }),
-      });
-      if (!res.ok) throw new Error(`API returned ${res.status}`);
-      const data = await res.json();
-      setCache((prev) => ({ ...prev, [account.id]: { status: "done", data } }));
+      const data = await fetchInvite(account);
+      onUpdateCache(account.id, { status: "done", data });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
-      setCache((prev) => ({ ...prev, [account.id]: { status: "error", message } }));
+      onUpdateCache(account.id, { status: "error", message });
     }
   }
 

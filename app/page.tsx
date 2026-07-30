@@ -5,17 +5,27 @@ import UploadZone from "@/components/UploadZone";
 import QualifiedLeadsTab from "@/components/tabs/QualifiedLeadsTab";
 import EcommOpportunitiesTab from "@/components/tabs/EcommOpportunitiesTab";
 import InnovationPartnersTab from "@/components/tabs/InnovationPartnersTab";
+import PipelineTab from "@/components/tabs/PipelineTab";
 import { parseExcelFile } from "@/lib/excel";
 import { DEFAULT_PRICING_CONFIG, type PricingConfig } from "@/lib/pricing";
 import { DEFAULT_WEIGHTS } from "@/lib/types";
-import type { Account, MetricWeights } from "@/lib/types";
+import type {
+  Account,
+  CacheEntry,
+  DraftEmail,
+  EcommScanCache,
+  EcommScanResult,
+  InviteCache,
+  MetricWeights,
+} from "@/lib/types";
 
-type TabId = "leads" | "ecomm" | "innovation";
+type TabId = "leads" | "ecomm" | "innovation" | "pipeline";
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "leads", label: "Qualified Leads" },
   { id: "ecomm", label: "E-Commerce Opportunities" },
   { id: "innovation", label: "Innovation Partners" },
+  { id: "pipeline", label: "Pipeline" },
 ];
 
 export default function Home() {
@@ -28,6 +38,26 @@ export default function Home() {
   const [isParsing, setIsParsing] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+
+  // Lifted so the Pipeline tab can read Tab 2 / Tab 3's cached results too
+  // ("from the Tab-2 scan if available") and so switching tabs never loses
+  // in-flight or completed work.
+  const [ecommScanCache, setEcommScanCache] = useState<EcommScanCache>({});
+  const [inviteCache, setInviteCache] = useState<InviteCache>({});
+
+  const updateEcommScanCache = useCallback(
+    (accountId: string, entry: CacheEntry<EcommScanResult>) => {
+      setEcommScanCache((prev) => ({ ...prev, [accountId]: entry }));
+    },
+    [],
+  );
+
+  const updateInviteCache = useCallback(
+    (accountId: string, entry: CacheEntry<DraftEmail>) => {
+      setInviteCache((prev) => ({ ...prev, [accountId]: entry }));
+    },
+    [],
+  );
 
   const handleFile = useCallback(async (file: File) => {
     setParseError(null);
@@ -60,6 +90,8 @@ export default function Home() {
   const reset = useCallback(() => {
     setAccounts([]);
     setPricingConfig({ ...DEFAULT_PRICING_CONFIG });
+    setEcommScanCache({});
+    setInviteCache({});
     setFileName(null);
     setWeights({ ...DEFAULT_WEIGHTS });
     setActiveTab("leads");
@@ -129,9 +161,9 @@ export default function Home() {
           </div>
         ) : (
           <>
-            {/* All three tabs stay mounted so scan results, AI explanations,
-                and drafted invitations survive switching tabs — only
-                visibility toggles. */}
+            {/* All four tabs stay mounted so scan results, AI explanations,
+                drafted invitations, and pipeline stage moves survive
+                switching tabs — only visibility toggles. */}
             <div className={activeTab === "leads" ? "contents" : "hidden"}>
               <QualifiedLeadsTab
                 accounts={accounts}
@@ -140,10 +172,29 @@ export default function Home() {
               />
             </div>
             <div className={activeTab === "ecomm" ? "contents" : "hidden"}>
-              <EcommOpportunitiesTab accounts={accounts} />
+              <EcommOpportunitiesTab
+                accounts={accounts}
+                pricingConfig={pricingConfig}
+                cache={ecommScanCache}
+                onUpdateCache={updateEcommScanCache}
+              />
             </div>
             <div className={activeTab === "innovation" ? "contents" : "hidden"}>
-              <InnovationPartnersTab accounts={accounts} />
+              <InnovationPartnersTab
+                accounts={accounts}
+                cache={inviteCache}
+                onUpdateCache={updateInviteCache}
+              />
+            </div>
+            <div className={activeTab === "pipeline" ? "contents" : "hidden"}>
+              <PipelineTab
+                accounts={accounts}
+                pricingConfig={pricingConfig}
+                ecommScanCache={ecommScanCache}
+                onUpdateEcommCache={updateEcommScanCache}
+                inviteCache={inviteCache}
+                onUpdateInviteCache={updateInviteCache}
+              />
             </div>
           </>
         )}

@@ -5,10 +5,20 @@ import RevenueCounter from "@/components/RevenueCounter";
 import ActivityFeed from "@/components/ActivityFeed";
 import FunnelRow from "@/components/FunnelRow";
 import { runEcommScans } from "@/lib/ecommScan";
-import type { Account, ActivityEvent, EcommScanCache } from "@/lib/types";
+import type { PricingConfig } from "@/lib/pricing";
+import type {
+  Account,
+  ActivityEvent,
+  CacheEntry,
+  EcommScanCache,
+  EcommScanResult,
+} from "@/lib/types";
 
 interface EcommOpportunitiesTabProps {
   accounts: Account[];
+  pricingConfig: PricingConfig;
+  cache: EcommScanCache;
+  onUpdateCache: (accountId: string, entry: CacheEntry<EcommScanResult>) => void;
 }
 
 const TOP_N = 20;
@@ -22,17 +32,14 @@ function generateEventId(): string {
 
 export default function EcommOpportunitiesTab({
   accounts,
+  pricingConfig,
+  cache,
+  onUpdateCache,
 }: EcommOpportunitiesTabProps) {
-  const [cache, setCache] = useState<EcommScanCache>({});
   const [activity, setActivity] = useState<ActivityEvent[]>([]);
   const [isScanning, setIsScanning] = useState(false);
   const [selectedId, setSelectedId] = useState<string>(accounts[0]?.id ?? "");
   const runIdRef = useRef(0);
-
-  const updateCache: Parameters<typeof runEcommScans>[1]["onUpdate"] =
-    useCallback((accountId, entry) => {
-      setCache((prev) => ({ ...prev, [accountId]: entry }));
-    }, []);
 
   const pushActivity = useCallback(
     (event: Omit<ActivityEvent, "id" | "timestamp">) => {
@@ -51,8 +58,9 @@ export default function EcommOpportunitiesTab({
       try {
         await runEcommScans(targets, {
           concurrency: 4,
+          pricingConfig,
           onUpdate: (id, entry) => {
-            if (runIdRef.current === myRun) updateCache(id, entry);
+            if (runIdRef.current === myRun) onUpdateCache(id, entry);
           },
           onActivity: (event) => {
             if (runIdRef.current === myRun) pushActivity(event);
@@ -62,7 +70,7 @@ export default function EcommOpportunitiesTab({
         if (runIdRef.current === myRun) setIsScanning(false);
       }
     },
-    [updateCache, pushActivity],
+    [pricingConfig, onUpdateCache, pushActivity],
   );
 
   const topByRevenue = useMemo(

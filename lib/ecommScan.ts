@@ -4,6 +4,7 @@ import type {
   CacheEntry,
   EcommScanResult,
 } from "./types";
+import type { PricingConfig } from "./pricing";
 import { formatUSD } from "./format";
 
 function truncate(text: string, max = 90): string {
@@ -11,15 +12,42 @@ function truncate(text: string, max = 90): string {
   return clean.length > max ? `${clean.slice(0, max - 1)}…` : clean;
 }
 
+/** Single-account fetch, no side effects — reused by the batch scanner
+ * below and by the Pipeline's "Automated AI Reachout" stage trigger. */
+export async function fetchEcommScan(
+  account: Account,
+  pricingConfig: PricingConfig,
+): Promise<EcommScanResult> {
+  const res = await fetch("/api/ecomm-scan", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      accountName: account.accountName,
+      website: account.website,
+      accountType: account.accountType,
+      region: account.region,
+      annualRevenueUSD: account.annualRevenueUSD,
+      revenueGrowthYoY: account.revenueGrowthYoY,
+      customersOnFile: account.customersOnFile,
+      pricingTier: account.pricingTier,
+      notes: account.notes,
+      pricingConfig,
+    }),
+  });
+  if (!res.ok) throw new Error(`API returned ${res.status}`);
+  return res.json();
+}
+
 interface RunScansOptions {
   concurrency?: number;
+  pricingConfig: PricingConfig;
   onUpdate: (accountId: string, entry: CacheEntry<EcommScanResult>) => void;
   onActivity: (event: Omit<ActivityEvent, "id" | "timestamp">) => void;
 }
 
 async function scanOne(
   account: Account,
-  { onUpdate, onActivity }: RunScansOptions,
+  { pricingConfig, onUpdate, onActivity }: RunScansOptions,
 ): Promise<void> {
   onUpdate(account.id, { status: "loading" });
   onActivity({
@@ -30,24 +58,7 @@ async function scanOne(
   });
 
   try {
-    const res = await fetch("/api/ecomm-scan", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        accountName: account.accountName,
-        website: account.website,
-        accountType: account.accountType,
-        region: account.region,
-        annualRevenueUSD: account.annualRevenueUSD,
-        revenueGrowthYoY: account.revenueGrowthYoY,
-        customersOnFile: account.customersOnFile,
-        notes: account.notes,
-      }),
-    });
-
-    if (!res.ok) throw new Error(`API returned ${res.status}`);
-
-    const data: EcommScanResult = await res.json();
+    const data = await fetchEcommScan(account, pricingConfig);
 
     if (data.evidence.length > 0) {
       onActivity({
