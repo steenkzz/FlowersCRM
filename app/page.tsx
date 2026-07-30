@@ -129,7 +129,9 @@ export default function Home() {
             {activeTab === "ecomm" && (
               <EcommOpportunitiesTab accounts={accounts} />
             )}
-            {activeTab === "innovation" && <InnovationPartnersTab />}
+            {activeTab === "innovation" && (
+              <InnovationPartnersTab accounts={accounts} />
+            )}
           </>
         )}
       </main>

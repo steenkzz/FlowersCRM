@@ -1,13 +1,19 @@
 "use client";
 
 import LeadsRow from "./LeadsRow";
-import type { ScoredAccount } from "@/lib/types";
+import type { ExplanationCache, ScoredAccount } from "@/lib/types";
 
 interface LeadsTableProps {
   scored: ScoredAccount[];
+  explanations: ExplanationCache;
+  onRequestExplanation: (scored: ScoredAccount) => void;
 }
 
-export default function LeadsTable({ scored }: LeadsTableProps) {
+export default function LeadsTable({
+  scored,
+  explanations,
+  onRequestExplanation,
+}: LeadsTableProps) {
   if (scored.length === 0) {
     return (
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
@@ -26,6 +32,8 @@ export default function LeadsTable({ scored }: LeadsTableProps) {
           scored={s}
           rank={i + 1}
           normalized={s.normalized}
+          explanation={explanations[s.account.id]}
+          onRequestExplanation={() => onRequestExplanation(s)}
         />
       ))}
     </div>
