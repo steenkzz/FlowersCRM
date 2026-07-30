@@ -8,15 +8,18 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 interface EnrichRequestBody {
   company: string;
+  website?: string;
   contactName?: string;
   contactRole?: string;
   sector?: string;
   employees?: string;
-  region?: string;
-  currentSoftware?: string;
-  customerSince?: string;
+  annualContractValueUSD?: string;
+  contractRenewalDate?: string;
+  paymentStatus?: string;
+  supportTickets12m?: string;
+  npsScore?: string;
   lastActivity?: string;
-  annualRevenueEUR?: string;
+  currentInternalSoftware?: string;
   openOpportunity?: string;
   notes?: string;
 }
@@ -56,24 +59,32 @@ function stripJsonFences(text: string): string {
 }
 
 function buildPrompt(body: EnrichRequestBody): string {
-  return `You are a B2B sales intelligence analyst. Research this company using web search, then score how likely they are to be a good prospect for an AI/automation product.
+  return `You are a B2B customer-success and sales intelligence analyst. Research this company using web search, then score how likely they are to be a good prospect for an AI/automation product — either as a new sale or an upsell into their existing contract.
 
 CRM RECORD:
 - Company: ${body.company}
+- Website: ${body.website || "unknown"}
 - Contact: ${body.contactName || "unknown"} (${body.contactRole || "unknown role"})
 - Sector: ${body.sector || "unknown"}
 - Employees: ${body.employees || "unknown"}
-- Region: ${body.region || "unknown"}
-- Current software/CRM: ${body.currentSoftware || "unknown"}
-- Customer since: ${body.customerSince || "unknown"}
+- Annual contract value (USD): ${body.annualContractValueUSD || "unknown"}
+- Contract renewal date: ${body.contractRenewalDate || "unknown"}
+- Payment status: ${body.paymentStatus || "unknown"}
+- Support tickets (last 12 months): ${body.supportTickets12m || "unknown"}
+- NPS score: ${body.npsScore || "unknown"}
 - Last activity: ${body.lastActivity || "unknown"}
-- Annual revenue (EUR): ${body.annualRevenueEUR || "unknown"}
+- Current internal software: ${body.currentInternalSoftware || "unknown"}
 - Open opportunity: ${body.openOpportunity || "none"}
 - Notes: ${body.notes || "none"}
 
 INSTRUCTIONS:
-1. Use web search to find recent, relevant public information about this company: recent news, funding, hiring trends, technology-stack signals, and any public mentions of AI or automation initiatives. If you can't confidently find the company (ambiguous name, too small for a web presence), say so plainly in webFindings and score conservatively rather than guessing.
-2. Score "AI opportunity likelihood" 0-100. Combine BOTH the CRM record (especially Notes, Current Software, and Open Opportunity) AND what you found on the web. Higher = strong signal they need/want AI-powered tooling soon (hiring for data/AI roles, outdated current software, public digital-transformation statements, growth signals, an open opportunity already in play, stale current software). Lower = no signal, declining company, or already running a modern AI-native stack that competes with what we'd pitch.
+1. Use web search to find recent, relevant public information about this company — check their website if given, plus recent news, funding, hiring trends, technology-stack signals, and any public mentions of AI or automation initiatives. If you can't confidently find the company (ambiguous name, too small for a web presence), say so plainly in webFindings and score conservatively rather than guessing.
+2. Score "AI opportunity likelihood" 0-100. Combine BOTH the CRM record AND what you found on the web. Read the account-health signals together, not in isolation:
+   - High support ticket volume + low NPS = real operational pain — often the strongest "needs automation now" signal, especially if paired with an open opportunity or a mention of manual work in Notes.
+   - A contract renewal date coming up soon is a timing signal for outreach, whether the pitch is retention, upsell, or an AI add-on.
+   - An overdue/at-risk payment status usually means deprioritize an upsell pitch and lower the score — budget-constrained accounts are poor upsell targets right now, though note it in scoreReasoning as useful context.
+   - Outdated or manual current internal software, hiring for data/AI roles, and public digital-transformation statements all raise the score.
+   - A healthy NPS with no pain signals and no open opportunity should score low — no reason to reach out yet.
 3. Recommend one concrete next action for the sales rep.
 4. Draft a short, specific, personalized outreach email (not generic boilerplate) referencing at least one real detail from the CRM record or the web research.
 

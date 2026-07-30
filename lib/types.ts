@@ -1,16 +1,19 @@
 export interface Account {
   id: string;
   company: string;
+  website: string;
   contactName: string;
   contactRole: string;
   email: string;
   sector: string;
   employees: string;
-  region: string;
-  currentSoftware: string;
-  customerSince: string;
+  annualContractValueUSD: string;
+  contractRenewalDate: string;
+  paymentStatus: string;
+  supportTickets12m: string;
+  npsScore: string;
   lastActivity: string;
-  annualRevenueEUR: string;
+  currentInternalSoftware: string;
   openOpportunity: string;
   notes: string;
   extra: Record<string, string>;

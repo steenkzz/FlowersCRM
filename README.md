@@ -11,10 +11,12 @@ explains the score, and drafts a personalized outreach email for follow-up.
 
 1. **Upload** — drag-and-drop an `.xlsx` export. Parsed client-side with
    `xlsx`; unknown columns are tolerated, expected ones are matched by
-   flexible header aliases (`Company`, `Contact Name`, `Contact Role`,
-   `Email`, `Sector`, `Employees`, `Region`, `Current Software`,
-   `Customer Since`, `Last Activity`, `Annual Revenue (EUR)`,
-   `Open Opportunity`, `Notes`).
+   flexible header aliases (`Company`, `Website`, `Contact Name`,
+   `Contact/Contract Role`, `Email`, `Sector`, `Employees`,
+   `Annual Contract Value (USD)`, `Contract Renewal Date`,
+   `Payment Status`, `Support Tickets (12m)`, `NPS Score`,
+   `Last Activity`, `Current Internal Software`, `Open Opportunity`,
+   `Notes` — common typos like "Open Oppertunity" are also matched).
 2. **Review** — every parsed row shown in a table before anything is sent
    to the API.
 3. **Research & score** — `/api/enrich` calls Claude (`claude-sonnet-4-6`)

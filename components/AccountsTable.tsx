@@ -11,9 +11,11 @@ const COLUMNS: { key: keyof Account; label: string }[] = [
   { key: "contactName", label: "Contact" },
   { key: "contactRole", label: "Role" },
   { key: "sector", label: "Sector" },
-  { key: "region", label: "Region" },
-  { key: "currentSoftware", label: "Current Software" },
-  { key: "annualRevenueEUR", label: "Revenue (EUR)" },
+  { key: "currentInternalSoftware", label: "Internal Software" },
+  { key: "annualContractValueUSD", label: "ACV (USD)" },
+  { key: "paymentStatus", label: "Payment Status" },
+  { key: "npsScore", label: "NPS" },
+  { key: "contractRenewalDate", label: "Renewal Date" },
   { key: "openOpportunity", label: "Open Opportunity" },
 ];
 
@@ -29,7 +31,7 @@ export default function AccountsTable({ accounts }: AccountsTableProps) {
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200">
       <div className="max-h-[420px] overflow-auto">
-        <table className="w-full min-w-[900px] border-collapse text-sm">
+        <table className="w-full min-w-[1050px] border-collapse text-sm">
           <thead className="sticky top-0 bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
             <tr>
               {COLUMNS.map((col) => (
