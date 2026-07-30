@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import UploadZone from "@/components/UploadZone";
+import LandingPage from "@/components/LandingPage";
+import FlowerIcon from "@/components/FlowerIcon";
 import SummaryTab from "@/components/tabs/SummaryTab";
 import QualifiedLeadsTab from "@/components/tabs/QualifiedLeadsTab";
 import EcommOpportunitiesTab from "@/components/tabs/EcommOpportunitiesTab";
@@ -9,6 +10,15 @@ import InnovationPartnersTab from "@/components/tabs/InnovationPartnersTab";
 import PipelineTab from "@/components/tabs/PipelineTab";
 import AutopilotTab from "@/components/tabs/AutopilotTab";
 import AddonLibraryTab from "@/components/tabs/AddonLibraryTab";
+import {
+  HomeIcon,
+  UsersIcon,
+  CartIcon,
+  SparkleIcon,
+  FunnelIcon,
+  InboxIcon,
+  LibraryIcon,
+} from "@/components/icons";
 import { parseExcelFile } from "@/lib/excel";
 import { DEFAULT_PRICING_CONFIG, type PricingConfig } from "@/lib/pricing";
 import { DEFAULT_WEIGHTS } from "@/lib/types";
@@ -33,30 +43,15 @@ type TabId =
   | "autopilot"
   | "library";
 
-const TABS: { id: TabId; label: string }[] = [
-  { id: "summary", label: "Summary" },
-  { id: "leads", label: "Qualified Leads Module" },
-  { id: "ecomm", label: "E-Commerce Opportunities Module" },
-  { id: "innovation", label: "Creator's Add-on" },
-  { id: "pipeline", label: "Opportunity Funnel" },
-  { id: "autopilot", label: "Add-on Requests" },
-  { id: "library", label: "Add-on Library" },
+const TABS: { id: TabId; label: string; icon: typeof HomeIcon }[] = [
+  { id: "summary", label: "Summary", icon: HomeIcon },
+  { id: "leads", label: "Qualified Leads Module", icon: UsersIcon },
+  { id: "ecomm", label: "E-Commerce Opportunities Module", icon: CartIcon },
+  { id: "innovation", label: "Creator's Add-on", icon: SparkleIcon },
+  { id: "pipeline", label: "Opportunity Funnel", icon: FunnelIcon },
+  { id: "autopilot", label: "Add-on Requests", icon: InboxIcon },
+  { id: "library", label: "Add-on Library", icon: LibraryIcon },
 ];
-
-function FlowerIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className="h-4.5 w-4.5"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="2.4" />
-      <path d="M12 2.5c-1.93 0-3.5 1.57-3.5 3.5 0 1.06.47 2 1.22 2.65A3.49 3.49 0 0 0 8.5 12c0 1.06.47 2 1.22 2.65A3.49 3.49 0 0 0 8.5 18c0 1.93 1.57 3.5 3.5 3.5s3.5-1.57 3.5-3.5c0-1.06-.47-2-1.22-2.65A3.49 3.49 0 0 0 15.5 12c0-1.06-.47-2-1.22-2.65A3.49 3.49 0 0 0 15.5 6c0-1.93-1.57-3.5-3.5-3.5Zm0 2c.83 0 1.5.67 1.5 1.5S12.83 7.5 12 7.5 10.5 6.83 10.5 6 11.17 4.5 12 4.5Zm0 15c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5Z" />
-    </svg>
-  );
-}
 
 export default function Home() {
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -133,128 +128,129 @@ export default function Home() {
     setActiveTab("summary");
   }, []);
 
-  return (
-    <div className="flex flex-1 flex-col bg-canvas">
-      <header className="border-b border-slate-100">
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-5">
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-indigo text-white">
-              <FlowerIcon />
-            </div>
+  if (accounts.length === 0) {
+    return (
+      <div className="flex flex-1 flex-col bg-canvas">
+        <header className="border-b border-slate-200 bg-card">
+          <div className="mx-auto flex max-w-[1400px] items-center gap-2 px-6 py-4">
+            <FlowerIcon className="h-7 w-7" />
             <span className="text-sm font-semibold tracking-tight text-slate-900">
               FlowersCRM
             </span>
           </div>
-          {fileName && (
-            <div className="flex items-center gap-4">
-              <span className="text-xs text-slate-400">{fileName}</span>
-              <button
-                onClick={reset}
-                className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
-              >
-                Upload a different file
-              </button>
-            </div>
-          )}
+        </header>
+        <LandingPage
+          onFile={handleFile}
+          isLoading={isParsing}
+          error={parseError}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen bg-canvas">
+      <aside className="flex w-64 shrink-0 flex-col bg-sidebar">
+        <div className="flex items-center gap-2 px-5 py-5">
+          <FlowerIcon className="h-7 w-7" />
+          <span className="text-sm font-semibold tracking-tight text-white">
+            FlowersCRM
+          </span>
         </div>
-        {accounts.length > 0 && (
-          <div className="mx-auto flex max-w-[1400px] gap-1 overflow-x-auto px-6">
-            {TABS.map((tab) => (
+        <nav className="flex flex-1 flex-col gap-0.5 px-3 py-2">
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
-                  activeTab === tab.id
-                    ? "border-indigo text-indigo"
-                    : "border-transparent text-slate-500 hover:text-slate-700"
+                className={`flex items-center gap-3 rounded-lg border-l-2 px-3 py-2.5 text-left text-sm font-medium transition-colors ${
+                  isActive
+                    ? "border-indigo bg-sidebar-active text-white"
+                    : "border-transparent text-sidebar-text hover:bg-sidebar-active hover:text-white"
                 }`}
               >
-                {tab.label}
+                <tab.icon className="h-4.5 w-4.5 shrink-0" />
+                <span className="truncate">{tab.label}</span>
               </button>
-            ))}
-          </div>
-        )}
-      </header>
+            );
+          })}
+        </nav>
+      </aside>
 
-      <main className="mx-auto flex w-full max-w-[1400px] flex-1 flex-col gap-10 px-6 py-12">
-        {accounts.length === 0 ? (
-          <div className="flex flex-1 flex-col items-center justify-center gap-8 py-10 text-center">
-            <div className="flex flex-col items-center gap-3">
-              <h1 className="text-4xl font-semibold tracking-tight text-slate-900">
-                Your ERP data knows who&apos;s ready to grow.
-              </h1>
-              <p className="max-w-xl text-lg text-slate-500">
-                Upload your customer base and find the accounts to target for
-                the new AI storefront + commission play — ranked, researched,
-                and ready for outreach.
-              </p>
-            </div>
-            <UploadZone
-              onFile={handleFile}
-              isLoading={isParsing}
-              error={parseError}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="border-b border-slate-200 bg-card">
+          <div className="flex items-center justify-end gap-4 px-6 py-4">
+            {fileName && (
+              <span className="text-xs text-slate-400">{fileName}</span>
+            )}
+            <button
+              onClick={reset}
+              className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+            >
+              Upload a different file
+            </button>
+          </div>
+        </header>
+
+        <main className="flex w-full flex-1 flex-col gap-10 px-8 py-10">
+          {/* All tabs stay mounted so scan results, AI explanations, drafted
+              invitations, pipeline stage moves, and add-on requests survive
+              switching tabs — only visibility toggles. */}
+          <div className={activeTab === "summary" ? "contents" : "hidden"}>
+            <SummaryTab
+              accounts={accounts}
+              pricingConfig={pricingConfig}
+              ecommScanCache={ecommScanCache}
+              addonRequests={addonRequests}
+              onNavigate={setActiveTab}
             />
           </div>
-        ) : (
-          <>
-            {/* All tabs stay mounted so scan results, AI explanations, drafted
-                invitations, pipeline stage moves, and add-on requests survive
-                switching tabs — only visibility toggles. */}
-            <div className={activeTab === "summary" ? "contents" : "hidden"}>
-              <SummaryTab
-                accounts={accounts}
-                pricingConfig={pricingConfig}
-                ecommScanCache={ecommScanCache}
-                addonRequests={addonRequests}
-                onNavigate={setActiveTab}
-              />
-            </div>
-            <div className={activeTab === "leads" ? "contents" : "hidden"}>
-              <QualifiedLeadsTab
-                accounts={accounts}
-                weights={weights}
-                onWeightsChange={setWeights}
-              />
-            </div>
-            <div className={activeTab === "ecomm" ? "contents" : "hidden"}>
-              <EcommOpportunitiesTab
-                accounts={accounts}
-                pricingConfig={pricingConfig}
-                cache={ecommScanCache}
-                onUpdateCache={updateEcommScanCache}
-              />
-            </div>
-            <div className={activeTab === "innovation" ? "contents" : "hidden"}>
-              <InnovationPartnersTab
-                accounts={accounts}
-                cache={inviteCache}
-                onUpdateCache={updateInviteCache}
-              />
-            </div>
-            <div className={activeTab === "pipeline" ? "contents" : "hidden"}>
-              <PipelineTab
-                accounts={accounts}
-                pricingConfig={pricingConfig}
-                ecommScanCache={ecommScanCache}
-                onUpdateEcommCache={updateEcommScanCache}
-                inviteCache={inviteCache}
-                onUpdateInviteCache={updateInviteCache}
-              />
-            </div>
-            <div className={activeTab === "autopilot" ? "contents" : "hidden"}>
-              <AutopilotTab
-                accounts={accounts}
-                pricingConfig={pricingConfig}
-                requests={addonRequests}
-                onRequestsChange={setAddonRequests}
-              />
-            </div>
-            <div className={activeTab === "library" ? "contents" : "hidden"}>
-              <AddonLibraryTab requests={addonRequests} />
-            </div>
-          </>
-        )}
-      </main>
+          <div className={activeTab === "leads" ? "contents" : "hidden"}>
+            <QualifiedLeadsTab
+              accounts={accounts}
+              weights={weights}
+              onWeightsChange={setWeights}
+            />
+          </div>
+          <div className={activeTab === "ecomm" ? "contents" : "hidden"}>
+            <EcommOpportunitiesTab
+              accounts={accounts}
+              pricingConfig={pricingConfig}
+              cache={ecommScanCache}
+              onUpdateCache={updateEcommScanCache}
+            />
+          </div>
+          <div className={activeTab === "innovation" ? "contents" : "hidden"}>
+            <InnovationPartnersTab
+              accounts={accounts}
+              cache={inviteCache}
+              onUpdateCache={updateInviteCache}
+            />
+          </div>
+          <div className={activeTab === "pipeline" ? "contents" : "hidden"}>
+            <PipelineTab
+              accounts={accounts}
+              pricingConfig={pricingConfig}
+              ecommScanCache={ecommScanCache}
+              onUpdateEcommCache={updateEcommScanCache}
+              inviteCache={inviteCache}
+              onUpdateInviteCache={updateInviteCache}
+            />
+          </div>
+          <div className={activeTab === "autopilot" ? "contents" : "hidden"}>
+            <AutopilotTab
+              accounts={accounts}
+              pricingConfig={pricingConfig}
+              requests={addonRequests}
+              onRequestsChange={setAddonRequests}
+            />
+          </div>
+          <div className={activeTab === "library" ? "contents" : "hidden"}>
+            <AddonLibraryTab requests={addonRequests} />
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
