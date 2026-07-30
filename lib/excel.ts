@@ -1,13 +1,31 @@
 import * as XLSX from "xlsx";
 import type { Account } from "./types";
 
-// Maps a normalized header (lowercased, alphanumerics only) to a canonical Account field.
-// Includes tolerant aliases for common renames/typos (e.g. "Contract Role", "Open Oppertunity").
-const HEADER_ALIASES: Record<string, keyof Omit<Account, "id" | "extra">> = {
-  company: "company",
-  companyname: "company",
-  account: "company",
-  accountname: "company",
+type StringField =
+  | "accountName"
+  | "website"
+  | "contactName"
+  | "contactRole"
+  | "email"
+  | "accountType"
+  | "region"
+  | "paymentStatus"
+  | "notes";
+
+type NumberField =
+  | "annualRevenueUSD"
+  | "customersOnFile"
+  | "valPayGMVUSD"
+  | "revenueGrowthYoY"
+  | "avgCustomWorkValueUSD"
+  | "avgSupportValueUSD"
+  | "npsScore";
+
+const STRING_ALIASES: Record<string, StringField> = {
+  accountname: "accountName",
+  account: "accountName",
+  company: "accountName",
+  companyname: "accountName",
   website: "website",
   url: "website",
   domain: "website",
@@ -15,53 +33,47 @@ const HEADER_ALIASES: Record<string, keyof Omit<Account, "id" | "extra">> = {
   contact: "contactName",
   name: "contactName",
   contactrole: "contactRole",
-  contractrole: "contactRole", // common typo for "Contact Role"
+  contractrole: "contactRole", // common typo
   role: "contactRole",
   title: "contactRole",
-  jobtitle: "contactRole",
   email: "email",
   emailaddress: "email",
-  sector: "sector",
-  industry: "sector",
-  employees: "employees",
-  employeecount: "employees",
-  companysize: "employees",
-  annualcontractvalueusd: "annualContractValueUSD",
-  annualcontractvalue: "annualContractValueUSD",
-  acv: "annualContractValueUSD",
-  contractvalue: "annualContractValueUSD",
-  // legacy schema support
-  annualrevenueeur: "annualContractValueUSD",
-  annualrevenue: "annualContractValueUSD",
-  revenue: "annualContractValueUSD",
-  contractrenewaldate: "contractRenewalDate",
-  renewaldate: "contractRenewalDate",
-  renewal: "contractRenewalDate",
+  accounttype: "accountType",
+  type: "accountType",
+  region: "region",
+  location: "region",
+  country: "region",
   paymentstatus: "paymentStatus",
   payment: "paymentStatus",
   billingstatus: "paymentStatus",
-  supporttickets12m: "supportTickets12m",
-  supporttickets: "supportTickets12m",
-  tickets12m: "supportTickets12m",
-  tickets: "supportTickets12m",
-  npsscore: "npsScore",
-  nps: "npsScore",
-  lastactivity: "lastActivity",
-  lastcontact: "lastActivity",
-  lasttouch: "lastActivity",
-  currentinternalsoftware: "currentInternalSoftware",
-  internalsoftware: "currentInternalSoftware",
-  // legacy schema support
-  currentsoftware: "currentInternalSoftware",
-  software: "currentInternalSoftware",
-  crm: "currentInternalSoftware",
-  openopportunity: "openOpportunity",
-  openoppertunity: "openOpportunity", // common typo
-  opportunity: "openOpportunity",
-  opendeal: "openOpportunity",
   notes: "notes",
   note: "notes",
   comments: "notes",
+};
+
+const NUMBER_ALIASES: Record<string, NumberField> = {
+  annualrevenueusd: "annualRevenueUSD",
+  annualrevenue: "annualRevenueUSD",
+  revenue: "annualRevenueUSD",
+  customersonfile: "customersOnFile",
+  customers: "customersOnFile",
+  customercount: "customersOnFile",
+  valpaygmvusd: "valPayGMVUSD",
+  valpaygmv: "valPayGMVUSD",
+  gmv: "valPayGMVUSD",
+  revenuegrowthyoy: "revenueGrowthYoY",
+  revenuegrowth: "revenueGrowthYoY",
+  growthyoy: "revenueGrowthYoY",
+  yoygrowth: "revenueGrowthYoY",
+  avgyearlycustomworkvalueusd: "avgCustomWorkValueUSD",
+  avgcustomworkvalueusd: "avgCustomWorkValueUSD",
+  avgcustomworkvalue: "avgCustomWorkValueUSD",
+  customworkvalue: "avgCustomWorkValueUSD",
+  avgsupportvalueusd: "avgSupportValueUSD",
+  avgsupportvalue: "avgSupportValueUSD",
+  supportvalue: "avgSupportValueUSD",
+  npsscore: "npsScore",
+  nps: "npsScore",
 };
 
 function normalizeHeader(header: string): string {
@@ -72,6 +84,15 @@ function cellToString(value: unknown): string {
   if (value === null || value === undefined) return "";
   if (value instanceof Date) return value.toISOString().slice(0, 10);
   return String(value).trim();
+}
+
+function cellToNumber(value: unknown): number {
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  const str = cellToString(value);
+  if (!str) return 0;
+  const cleaned = str.replace(/[^0-9.\-]/g, "");
+  const parsed = parseFloat(cleaned);
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 export interface ParsedExcelResult {
@@ -90,50 +111,55 @@ export async function parseExcelFile(file: File): Promise<ParsedExcelResult> {
   const sheet = workbook.Sheets[sheetName];
   const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, {
     defval: "",
-    raw: false,
+    raw: true,
   });
 
   const unknownColumns = new Set<string>();
   const accounts: Account[] = rows.map((row, index) => {
     const account: Account = {
       id: `row-${index}-${Date.now()}`,
-      company: "",
+      accountName: "",
       website: "",
       contactName: "",
       contactRole: "",
       email: "",
-      sector: "",
-      employees: "",
-      annualContractValueUSD: "",
-      contractRenewalDate: "",
+      accountType: "",
+      region: "",
+      annualRevenueUSD: 0,
+      customersOnFile: 0,
+      valPayGMVUSD: 0,
+      revenueGrowthYoY: 0,
+      avgCustomWorkValueUSD: 0,
+      avgSupportValueUSD: 0,
       paymentStatus: "",
-      supportTickets12m: "",
-      npsScore: "",
-      lastActivity: "",
-      currentInternalSoftware: "",
-      openOpportunity: "",
+      npsScore: 0,
       notes: "",
       extra: {},
     };
 
     for (const [rawHeader, rawValue] of Object.entries(row)) {
       const normalized = normalizeHeader(rawHeader);
-      const field = HEADER_ALIASES[normalized];
-      const value = cellToString(rawValue);
-      if (field) {
-        account[field] = value;
-      } else if (rawHeader.trim() && value) {
-        account.extra[rawHeader.trim()] = value;
-        unknownColumns.add(rawHeader.trim());
+      const stringField = STRING_ALIASES[normalized];
+      const numberField = NUMBER_ALIASES[normalized];
+
+      if (stringField) {
+        account[stringField] = cellToString(rawValue);
+      } else if (numberField) {
+        account[numberField] = cellToNumber(rawValue);
+      } else {
+        const value = cellToString(rawValue);
+        if (rawHeader.trim() && value) {
+          account.extra[rawHeader.trim()] = value;
+          unknownColumns.add(rawHeader.trim());
+        }
       }
     }
 
     return account;
   });
 
-  // Drop fully-empty rows (no company name, nothing else useful either)
   const filtered = accounts.filter(
-    (a) => a.company.trim() !== "" || Object.keys(a.extra).length > 0,
+    (a) => a.accountName.trim() !== "" || Object.keys(a.extra).length > 0,
   );
 
   return {

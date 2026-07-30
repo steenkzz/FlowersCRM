@@ -72,7 +72,7 @@ export default function UploadZone({
         {isLoading ? (
           <div className="flex flex-col items-center gap-2">
             <p className="text-sm font-medium text-slate-700">
-              Parsing spreadsheet…
+              Parsing customer base…
             </p>
             <div className="h-1 w-40 overflow-hidden rounded-full bg-slate-200">
               <div className="h-full w-1/2 animate-pulse-dot rounded-full bg-indigo" />
@@ -81,7 +81,7 @@ export default function UploadZone({
         ) : (
           <>
             <p className="text-base font-medium text-slate-900">
-              Drop your CRM export here
+              Drop your customer base export here
             </p>
             <p className="text-sm text-slate-500">
               or click to browse — accepts .xlsx / .xls

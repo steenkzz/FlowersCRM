@@ -1,32 +1,29 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import UploadZone from "@/components/UploadZone";
-import AccountsTable from "@/components/AccountsTable";
-import ActivityFeed from "@/components/ActivityFeed";
-import ResultsList from "@/components/ResultsList";
+import QualifiedLeadsTab from "@/components/tabs/QualifiedLeadsTab";
+import EcommOpportunitiesTab from "@/components/tabs/EcommOpportunitiesTab";
+import InnovationPartnersTab from "@/components/tabs/InnovationPartnersTab";
 import { parseExcelFile } from "@/lib/excel";
-import { runEnrichment, toEnrichedAccount } from "@/lib/enrichment";
-import type { ActivityEvent, EnrichedAccount } from "@/lib/types";
+import { DEFAULT_WEIGHTS } from "@/lib/types";
+import type { Account, MetricWeights } from "@/lib/types";
 
-type Stage = "upload" | "review" | "results";
+type TabId = "leads" | "ecomm" | "innovation";
 
-function generateEventId(): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
-  }
-  return `evt-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
+const TABS: { id: TabId; label: string }[] = [
+  { id: "leads", label: "Qualified Leads" },
+  { id: "ecomm", label: "E-Commerce Opportunities" },
+  { id: "innovation", label: "Innovation Partners" },
+];
 
 export default function Home() {
-  const [stage, setStage] = useState<Stage>("upload");
-  const [accounts, setAccounts] = useState<EnrichedAccount[]>([]);
-  const [activity, setActivity] = useState<ActivityEvent[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [weights, setWeights] = useState<MetricWeights>({ ...DEFAULT_WEIGHTS });
+  const [activeTab, setActiveTab] = useState<TabId>("leads");
   const [isParsing, setIsParsing] = useState(false);
-  const [isEnriching, setIsEnriching] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
-  const runIdRef = useRef(0);
 
   const handleFile = useCallback(async (file: File) => {
     setParseError(null);
@@ -39,10 +36,8 @@ export default function Home() {
         );
         setAccounts([]);
       } else {
-        setAccounts(parsed.map(toEnrichedAccount));
+        setAccounts(parsed);
         setFileName(file.name);
-        setActivity([]);
-        setStage("review");
       }
     } catch {
       setParseError(
@@ -53,65 +48,12 @@ export default function Home() {
     }
   }, []);
 
-  const updateAccount = useCallback(
-    (id: string, patch: Partial<EnrichedAccount>) => {
-      setAccounts((prev) =>
-        prev.map((a) => (a.id === id ? { ...a, ...patch } : a)),
-      );
-    },
-    [],
-  );
-
-  const pushActivity = useCallback(
-    (event: Omit<ActivityEvent, "id" | "timestamp">) => {
-      setActivity((prev) => [
-        ...prev,
-        { ...event, id: generateEventId(), timestamp: Date.now() },
-      ]);
-    },
-    [],
-  );
-
-  const startEnrichment = useCallback(async () => {
-    const myRun = ++runIdRef.current;
-    setStage("results");
-    setIsEnriching(true);
-    try {
-      await runEnrichment(accounts, {
-        concurrency: 4,
-        onUpdate: (id, patch) => {
-          if (runIdRef.current === myRun) updateAccount(id, patch);
-        },
-        onActivity: (event) => {
-          if (runIdRef.current === myRun) pushActivity(event);
-        },
-      });
-    } finally {
-      if (runIdRef.current === myRun) setIsEnriching(false);
-    }
-  }, [accounts, updateAccount, pushActivity]);
-
   const reset = useCallback(() => {
-    runIdRef.current += 1;
     setAccounts([]);
-    setActivity([]);
     setFileName(null);
-    setStage("upload");
-    setIsEnriching(false);
+    setWeights({ ...DEFAULT_WEIGHTS });
+    setActiveTab("leads");
   }, []);
-
-  const stats = useMemo(() => {
-    const done = accounts.filter((a) => a.status === "done" && a.enrichment);
-    const high = done.filter((a) => (a.enrichment?.aiOpportunityScore ?? 0) >= 75);
-    const avg =
-      done.length > 0
-        ? Math.round(
-            done.reduce((sum, a) => sum + (a.enrichment?.aiOpportunityScore ?? 0), 0) /
-              done.length,
-          )
-        : null;
-    return { doneCount: done.length, highCount: high.length, avg };
-  }, [accounts]);
 
   return (
     <div className="flex flex-1 flex-col bg-white">
@@ -119,13 +61,13 @@ export default function Home() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
           <div className="flex items-center gap-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-indigo text-xs font-bold text-white">
-              IC
+              GI
             </div>
             <span className="text-sm font-semibold tracking-tight text-slate-900">
-              Intelligence CRM
+              Growth Intelligence
             </span>
           </div>
-          {fileName && stage !== "upload" && (
+          {fileName && (
             <div className="flex items-center gap-4">
               <span className="text-xs text-slate-400">{fileName}</span>
               <button
@@ -137,19 +79,36 @@ export default function Home() {
             </div>
           )}
         </div>
+        {accounts.length > 0 && (
+          <div className="mx-auto flex max-w-6xl gap-1 px-6">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
+                  activeTab === tab.id
+                    ? "border-indigo text-indigo"
+                    : "border-transparent text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        )}
       </header>
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-6 py-16">
-        {stage === "upload" && (
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-6 py-12">
+        {accounts.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-8 py-10 text-center">
             <div className="flex flex-col items-center gap-3">
               <h1 className="text-4xl font-semibold tracking-tight text-slate-900">
-                Don&apos;t migrate your CRM.
+                Your ERP data knows who&apos;s ready to grow.
               </h1>
-              <p className="max-w-lg text-lg text-slate-500">
-                Drop in your spreadsheet and get an intelligent CRM in 30
-                seconds — every account researched, scored, and ready for
-                outreach.
+              <p className="max-w-xl text-lg text-slate-500">
+                Upload your customer base and find the accounts to target for
+                the new AI storefront + commission play — ranked, researched,
+                and ready for outreach.
               </p>
             </div>
             <UploadZone
@@ -158,61 +117,18 @@ export default function Home() {
               error={parseError}
             />
           </div>
-        )}
-
-        {stage === "review" && (
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <h2 className="text-xl font-semibold text-slate-900">
-                  {accounts.length} accounts parsed
-                </h2>
-                <p className="text-sm text-slate-500">
-                  Review the raw import, then run AI research + scoring on
-                  every account.
-                </p>
-              </div>
-              <button
-                onClick={startEnrichment}
-                className="rounded-lg bg-indigo px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo/90"
-              >
-                Research &amp; score all accounts →
-              </button>
-            </div>
-            <AccountsTable accounts={accounts} />
-          </div>
-        )}
-
-        {stage === "results" && (
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <h2 className="text-xl font-semibold text-slate-900">
-                  {isEnriching
-                    ? `Researching ${accounts.length} accounts…`
-                    : "Ranked by AI opportunity"}
-                </h2>
-                <p className="text-sm text-slate-500">
-                  {stats.doneCount}/{accounts.length} enriched
-                  {stats.avg !== null && ` · avg score ${stats.avg}`}
-                  {stats.highCount > 0 && ` · ${stats.highCount} high-priority`}
-                </p>
-              </div>
-              {!isEnriching && (
-                <button
-                  onClick={startEnrichment}
-                  className="rounded-lg border border-slate-200 px-3.5 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
-                >
-                  Re-run failed accounts
-                </button>
-              )}
-            </div>
-
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-              <ResultsList accounts={accounts} />
-              <ActivityFeed events={activity} isRunning={isEnriching} />
-            </div>
-          </div>
+        ) : (
+          <>
+            {activeTab === "leads" && (
+              <QualifiedLeadsTab
+                accounts={accounts}
+                weights={weights}
+                onWeightsChange={setWeights}
+              />
+            )}
+            {activeTab === "ecomm" && <EcommOpportunitiesTab />}
+            {activeTab === "innovation" && <InnovationPartnersTab />}
+          </>
         )}
       </main>
     </div>
