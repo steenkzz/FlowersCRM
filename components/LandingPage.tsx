@@ -2,6 +2,7 @@
 
 import UploadZone from "@/components/UploadZone";
 import FlowerIcon from "@/components/FlowerIcon";
+import FlowerCluster from "@/components/FlowerCluster";
 import {
   UsersIcon,
   CartIcon,
@@ -84,10 +85,8 @@ export default function LandingPage({
 }: LandingPageProps) {
   return (
     <div className="flex flex-col">
-      <section className="flex flex-col items-center gap-6 px-6 pb-16 pt-20 text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-card shadow-sm">
-          <FlowerIcon className="h-9 w-9" />
-        </div>
+      <section className="relative flex flex-col items-center gap-6 overflow-hidden px-6 pb-16 pt-20 text-center">
+        <FlowerCluster className="h-16 w-32" />
         <div className="flex flex-col items-center gap-3">
           <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
             Growing revenue from the base you already own.
@@ -130,9 +129,12 @@ export default function LandingPage({
 
       <section className="px-6 py-14">
         <div className="mx-auto max-w-5xl">
-          <h2 className="mb-8 text-center text-sm font-semibold uppercase tracking-wide text-slate-400">
-            What&apos;s inside
-          </h2>
+          <div className="mb-8 flex flex-col items-center gap-3">
+            <FlowerIcon className="h-6 w-6" />
+            <h2 className="text-center text-sm font-semibold uppercase tracking-wide text-slate-400">
+              What&apos;s inside
+            </h2>
+          </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {MODULES.map((mod) => (
               <div

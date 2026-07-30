@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import RevenueCounter from "@/components/RevenueCounter";
 import ActivityFeed from "@/components/ActivityFeed";
+import FlowerIcon from "@/components/FlowerIcon";
 import FunnelRow from "@/components/FunnelRow";
 import { runEcommScans } from "@/lib/ecommScan";
 import type { PricingConfig } from "@/lib/pricing";
@@ -181,7 +182,8 @@ export default function EcommOpportunitiesTab({
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
         {rankedScanned.length === 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
+          <div className="flex flex-col items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
+            <FlowerIcon className="h-8 w-8 opacity-60" />
             No scans yet — pick an account or scan the top {TOP_N} by revenue.
           </div>
         ) : (

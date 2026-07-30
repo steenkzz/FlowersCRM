@@ -1,10 +1,16 @@
 interface FlowerIconProps {
   className?: string;
+  petalColor?: string;
+  centerColor?: string;
 }
 
 const PETAL_ANGLES = [-90, -18, 54, 126, 198];
 
-export default function FlowerIcon({ className }: FlowerIconProps) {
+export default function FlowerIcon({
+  className,
+  petalColor = "#FF7A59",
+  centerColor = "#F5B841",
+}: FlowerIconProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -19,11 +25,11 @@ export default function FlowerIcon({ className }: FlowerIconProps) {
           cy="6.4"
           rx="3.3"
           ry="5.6"
-          fill="#FF7A59"
+          fill={petalColor}
           transform={`rotate(${angle} 12 12)`}
         />
       ))}
-      <circle cx="12" cy="12" r="3.1" fill="#F5B841" />
+      <circle cx="12" cy="12" r="3.1" fill={centerColor} />
     </svg>
   );
 }

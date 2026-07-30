@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import FlowerIcon from "@/components/FlowerIcon";
 import { formatUSD, formatCompactNumber } from "@/lib/format";
 import { scoreAccounts } from "@/lib/scoring";
 import {
@@ -151,15 +152,18 @@ export default function SummaryTab({
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h2 className="text-xl font-semibold text-slate-900">
-          Growing revenue from the base you already own
-        </h2>
-        <p className="max-w-2xl text-sm text-slate-500">
-          One engine, three compounding loops — qualify the base, expand it
-          with e-commerce and add-ons, and turn every custom build into a new
-          SKU sold across the whole install base.
-        </p>
+      <div className="flex items-start gap-3">
+        <FlowerIcon className="mt-1 h-7 w-7 shrink-0" />
+        <div>
+          <h2 className="text-xl font-semibold text-slate-900">
+            Growing revenue from the base you already own
+          </h2>
+          <p className="max-w-2xl text-sm text-slate-500">
+            One engine, three compounding loops — qualify the base, expand it
+            with e-commerce and add-ons, and turn every custom build into a
+            new SKU sold across the whole install base.
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

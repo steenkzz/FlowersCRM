@@ -1,30 +1,77 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
-/* FlowersCRM theme — clean, light SaaS look (HubSpot-style): off-white
-   canvas, white cards, dark navy text/sidebar, warm orange accent. */
+/* FlowersCRM theme — colors pulled straight from the board-deck palette
+   (field greens, mint growth accent, gold + coral highlights). Light mode
+   is the deck's palette rebalanced for a white canvas; dark mode is the
+   deck's own dark background. Toggled by adding/removing `.dark` on
+   <html> — see components/ThemeToggle.tsx. */
 :root {
-  --background: #f5f8fa;
-  --foreground: #33475b;
-  --indigo: #ff7a59;
-  --indigo-light: #ffece6;
-  --canvas: #f5f8fa;
+  --background: #f7fbf9;
+  --foreground: #0e1f19;
+  --indigo: #16a97a;
+  --indigo-light: #e3f8ef;
+  --canvas: #f7fbf9;
   --card: #ffffff;
-  --sidebar: #213343;
-  --sidebar-active: #2e4257;
-  --sidebar-text: #cbd6e2;
+
+  /* Sidebar chrome stays the deck's dark green in both themes — it's
+     brand chrome, not page content. */
+  --sidebar: #0e1f19;
+  --sidebar-active: #17322a;
+  --sidebar-text: #aec7be;
 }
 
 @theme {
-  /* Neutral scale tuned to HubSpot's navy/gray text-and-border system. */
-  --color-slate-50: #f5f8fa;
-  --color-slate-100: #eaf0f6;
-  --color-slate-200: #cbd6e2;
-  --color-slate-300: #99acc2;
-  --color-slate-400: #7c98b6;
-  --color-slate-500: #6f8ba9;
-  --color-slate-600: #516f90;
-  --color-slate-700: #45596e;
-  --color-slate-900: #33475b;
+  --color-slate-50: #f1f8f4;
+  --color-slate-100: #e6f2ec;
+  --color-slate-200: #d2e6dc;
+  --color-slate-300: #a9c9ba;
+  --color-slate-400: #6b8a7e;
+  --color-slate-500: #4b6b60;
+  --color-slate-600: #375349;
+  --color-slate-700: #24382f;
+  --color-slate-900: #0e1f19;
+}
+
+:root.dark {
+  --background: #0a1712;
+  --foreground: #f2fbf7;
+  --indigo: #2fe39b;
+  --indigo-light: #123a2c;
+  --canvas: #0a1712;
+  --card: #16281f;
+
+  --color-slate-50: #101f19;
+  --color-slate-100: #17322a;
+  --color-slate-200: #1e4034;
+  --color-slate-300: #2c5647;
+  --color-slate-400: #7e9b90;
+  --color-slate-500: #aec7be;
+  --color-slate-600: #c7dbd3;
+  --color-slate-700: #dcede6;
+  --color-slate-900: #f2fbf7;
+
+  --color-red-50: #3a1512;
+  --color-red-200: #5c231f;
+  --color-red-500: #ff6b5c;
+  --color-red-600: #ff6b5c;
+
+  --color-amber-50: #33270e;
+  --color-amber-200: #4a3b18;
+  --color-amber-500: #f5b841;
+  --color-amber-600: #d9a233;
+  --color-amber-700: #b8862a;
+  --color-amber-800: #f5b841;
+
+  --color-emerald-50: #0f2a20;
+  --color-emerald-200: #1b4a38;
+  --color-emerald-500: #16a97a;
+  --color-emerald-600: #16a97a;
+  --color-emerald-700: #2fe39b;
+
+  --color-sky-50: #0f2a38;
+  --color-sky-500: #38bdf8;
+  --color-sky-700: #7dd3fc;
 }
 
 @theme inline {
@@ -44,6 +91,9 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), system-ui, sans-serif;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 @keyframes pulse-dot {
@@ -73,4 +123,17 @@ body {
 
 .animate-fade-in-up {
   animation: fade-in-up 0.25s ease-out;
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 6s linear infinite;
 }

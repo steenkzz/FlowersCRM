@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import RevenueCounter from "@/components/RevenueCounter";
+import FlowerIcon from "@/components/FlowerIcon";
 import { formatUSD } from "@/lib/format";
 import type { AddonRequest } from "@/lib/autopilotTypes";
 
@@ -57,7 +58,8 @@ export default function AddonLibraryTab({ requests }: AddonLibraryTabProps) {
       </div>
 
       {libraryItems.length === 0 ? (
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
+          <FlowerIcon className="h-8 w-8 opacity-60" />
           Nothing in the library yet — approve a build in Add-on Requests to
           list it here.
         </div>

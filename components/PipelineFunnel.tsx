@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import PipelineCard, { type PipelineCardData } from "./pipeline/PipelineCard";
+import FlowerIcon from "@/components/FlowerIcon";
 import { computePipelineTotals } from "@/lib/pipeline";
 import { formatUSD } from "@/lib/format";
 import { PIPELINE_STAGES } from "@/lib/types";
@@ -26,7 +27,8 @@ export default function PipelineFunnel({
 
   if (cards.length === 0) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
+      <div className="flex flex-col items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
+        <FlowerIcon className="h-8 w-8 opacity-60" />
         {emptyMessage}
       </div>
     );

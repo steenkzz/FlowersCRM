@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import LandingPage from "@/components/LandingPage";
 import FlowerIcon from "@/components/FlowerIcon";
+import ThemeToggle from "@/components/ThemeToggle";
 import SummaryTab from "@/components/tabs/SummaryTab";
 import QualifiedLeadsTab from "@/components/tabs/QualifiedLeadsTab";
 import EcommOpportunitiesTab from "@/components/tabs/EcommOpportunitiesTab";
@@ -132,11 +133,14 @@ export default function Home() {
     return (
       <div className="flex flex-1 flex-col bg-canvas">
         <header className="border-b border-slate-200 bg-card">
-          <div className="mx-auto flex max-w-[1400px] items-center gap-2 px-6 py-4">
-            <FlowerIcon className="h-7 w-7" />
-            <span className="text-sm font-semibold tracking-tight text-slate-900">
-              FlowersCRM
-            </span>
+          <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-4">
+            <div className="flex items-center gap-2">
+              <FlowerIcon className="h-7 w-7" />
+              <span className="text-sm font-semibold tracking-tight text-slate-900">
+                FlowersCRM
+              </span>
+            </div>
+            <ThemeToggle className="!text-slate-500 hover:!bg-slate-100 hover:!text-slate-900" />
           </div>
         </header>
         <LandingPage
@@ -176,6 +180,11 @@ export default function Home() {
             );
           })}
         </nav>
+
+        <div className="relative overflow-hidden border-t border-white/10 px-3 py-2">
+          <FlowerIcon className="pointer-events-none absolute -bottom-6 -right-6 h-28 w-28 opacity-[0.06]" />
+          <ThemeToggle />
+        </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
