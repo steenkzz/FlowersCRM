@@ -1,6 +1,16 @@
 import { SCORING_METRICS, type Account, type MetricKey } from "@/lib/types";
 import { formatUSD, formatPercent, formatCompactNumber } from "@/lib/format";
 
+// Shorter than the slider labels so chips don't truncate at this width.
+const CHIP_LABELS: Record<MetricKey, string> = {
+  annualRevenueUSD: "Revenue",
+  customersOnFile: "Customers",
+  valPayGMVUSD: "ValPay GMV",
+  revenueGrowthYoY: "Growth YoY",
+  avgCustomWorkValueUSD: "Custom Work",
+  avgSupportValueUSD: "Support Value",
+};
+
 function formatMetric(key: MetricKey, value: number): string {
   if (key === "revenueGrowthYoY") return formatPercent(value);
   if (key === "customersOnFile") return formatCompactNumber(value);
@@ -21,7 +31,7 @@ export default function MetricChips({ account, normalized }: MetricChipsProps) {
           className="flex flex-col gap-1 rounded-md border border-slate-100 bg-slate-50 px-2 py-1.5"
         >
           <span className="truncate text-[10px] font-medium uppercase tracking-wide text-slate-400">
-            {metric.label}
+            {CHIP_LABELS[metric.key]}
           </span>
           <span className="text-xs font-semibold tabular-nums text-slate-700">
             {formatMetric(metric.key, account[metric.key])}

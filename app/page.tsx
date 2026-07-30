@@ -119,19 +119,22 @@ export default function Home() {
           </div>
         ) : (
           <>
-            {activeTab === "leads" && (
+            {/* All three tabs stay mounted so scan results, AI explanations,
+                and drafted invitations survive switching tabs — only
+                visibility toggles. */}
+            <div className={activeTab === "leads" ? "contents" : "hidden"}>
               <QualifiedLeadsTab
                 accounts={accounts}
                 weights={weights}
                 onWeightsChange={setWeights}
               />
-            )}
-            {activeTab === "ecomm" && (
+            </div>
+            <div className={activeTab === "ecomm" ? "contents" : "hidden"}>
               <EcommOpportunitiesTab accounts={accounts} />
-            )}
-            {activeTab === "innovation" && (
+            </div>
+            <div className={activeTab === "innovation" ? "contents" : "hidden"}>
               <InnovationPartnersTab accounts={accounts} />
-            )}
+            </div>
           </>
         )}
       </main>
