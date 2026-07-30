@@ -8,9 +8,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Growth Intelligence",
+  title: "FlowersCRM",
   description:
-    "AI agent layer on top of the customer base — qualified leads, e-commerce opportunities, and innovation partners.",
+    "AI agent layer on top of the customer base — qualified leads, e-commerce opportunities, innovation partners, and add-on marketplace autopilot.",
 };
 
 export default function RootLayout({

@@ -102,11 +102,19 @@ export default function Home() {
       <header className="border-b border-slate-100">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-indigo text-xs font-bold text-white">
-              GI
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-indigo text-white">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="h-4.5 w-4.5"
+                aria-hidden="true"
+              >
+                <path d="M12 2c-1.66 0-3 1.34-3 3 0 .61.19 1.18.5 1.65C8.02 6.24 7 7.5 7 9c0 1.5 1.02 2.76 2.5 3.35A2.99 2.99 0 0 0 9 14c0 1.66 1.34 3 3 3s3-1.34 3-3c0-.61-.19-1.18-.5-1.65C15.98 11.76 17 10.5 17 9c0-1.5-1.02-2.76-2.5-3.35.31-.47.5-1.04.5-1.65 0-1.66-1.34-3-3-3Zm0 13c-2.76 0-5 1.79-5 4v3h10v-3c0-2.21-2.24-4-5-4Z" />
+              </svg>
             </div>
             <span className="text-sm font-semibold tracking-tight text-slate-900">
-              Growth Intelligence
+              FlowersCRM
             </span>
           </div>
           {fileName && (
