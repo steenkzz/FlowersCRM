@@ -32,6 +32,10 @@ import type { Account } from "@/lib/types";
 interface AutopilotTabProps {
   accounts: Account[];
   pricingConfig: PricingConfig;
+  requests: AddonRequest[];
+  onRequestsChange: (
+    updater: AddonRequest[] | ((prev: AddonRequest[]) => AddonRequest[]),
+  ) => void;
 }
 
 const TICK_MS = 4000;
@@ -46,10 +50,12 @@ function generateId(): string {
   return `id-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-export default function AutopilotTab({ accounts, pricingConfig }: AutopilotTabProps) {
-  const [requests, setRequests] = useState<AddonRequest[]>(() =>
-    seedInitialRequests(accounts),
-  );
+export default function AutopilotTab({
+  accounts,
+  pricingConfig,
+  requests,
+  onRequestsChange: setRequests,
+}: AutopilotTabProps) {
   const [events, setEvents] = useState<AutopilotEvent[]>([]);
   const [autopilotOn, setAutopilotOn] = useState(false);
   const [guardrailPaused, setGuardrailPaused] = useState(false);
@@ -92,7 +98,7 @@ export default function AutopilotTab({ accounts, pricingConfig }: AutopilotTabPr
 
   const updateRequest = useCallback((id: string, patch: Partial<AddonRequest>) => {
     setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
-  }, []);
+  }, [setRequests]);
 
   // --- Flywheel -----------------------------------------------------
 
@@ -142,7 +148,7 @@ export default function AutopilotTab({ accounts, pricingConfig }: AutopilotTabPr
       }, FLYWHEEL_DELAY_MS);
       pendingTimeouts.current.push(timeout);
     },
-    [accounts, findAccount, flywheelSpawnCount, pushEvent],
+    [accounts, findAccount, flywheelSpawnCount, pushEvent, setRequests],
   );
 
   // --- Per-request step processing (shared by autopilot + manual) ----
@@ -340,7 +346,7 @@ export default function AutopilotTab({ accounts, pricingConfig }: AutopilotTabPr
         pushEvent("System", request.id, request.accountName, `sponsor share failed (${message})`);
       }
     },
-    [pricingConfig, pushEvent, triggerFlywheel, updateRequest],
+    [pricingConfig, pushEvent, triggerFlywheel, updateRequest, setRequests],
   );
 
   // --- Orchestrator loop ----------------------------------------------
@@ -406,7 +412,7 @@ export default function AutopilotTab({ accounts, pricingConfig }: AutopilotTabPr
     setFlywheelSpawnCount(0);
     setEvents([]);
     setRequests(seedInitialRequests(accounts));
-  }, [accounts]);
+  }, [accounts, setRequests]);
 
   // --- Derived: diagram counts, stats -----------------------------------
 
@@ -482,7 +488,9 @@ export default function AutopilotTab({ accounts, pricingConfig }: AutopilotTabPr
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-slate-900">Autopilot</h2>
+          <h2 className="text-xl font-semibold text-slate-900">
+            Add-on Requests
+          </h2>
           <p className="max-w-lg text-sm text-slate-500">
             Autonomous orchestration over the Add-On Marketplace — evaluates
             requests, quotes or offers them free, simulates the customer,

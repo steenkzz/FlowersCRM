@@ -59,24 +59,29 @@ export default function PipelineFunnel({
         </div>
       </div>
 
-      <div className="flex gap-3 overflow-x-auto pb-2">
+      <div
+        className="grid gap-3"
+        style={{
+          gridTemplateColumns: `repeat(${PIPELINE_STAGES.length}, minmax(0, 1fr))`,
+        }}
+      >
         {PIPELINE_STAGES.map((stage) => {
           const stageCards = cards.filter((c) => c.stage === stage.id);
           const sum = stageCards.reduce((s, c) => s + c.value, 0);
           return (
             <div
               key={stage.id}
-              className="flex w-[272px] shrink-0 flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3"
+              className="flex min-w-0 flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3"
             >
               <div>
-                <p className="text-xs font-semibold text-slate-700">
+                <p className="truncate text-xs font-semibold text-slate-700">
                   {stage.label}
                 </p>
                 <p className="text-[11px] text-slate-400">
                   {stageCards.length} · {formatUSD(sum)}
                 </p>
               </div>
-              <div className="flex flex-col gap-2.5">
+              <div className="flex max-h-[65vh] flex-col gap-2.5 overflow-y-auto pr-0.5">
                 {stageCards.map((card) => (
                   <PipelineCard
                     key={card.id}
@@ -100,7 +105,7 @@ export default function PipelineFunnel({
             {lostCards.map((card) => (
               <span
                 key={card.id}
-                className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs text-slate-500"
+                className="rounded-full border border-slate-200 bg-card px-2.5 py-1 text-xs text-slate-500"
               >
                 {card.accountName} · {formatUSD(card.value)}
               </span>

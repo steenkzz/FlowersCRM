@@ -17,7 +17,7 @@ export default function LoopDiagram({ counts, activeNodeId }: LoopDiagramProps) 
                 className={`flex w-[124px] flex-col items-center gap-1 rounded-lg border px-2.5 py-2.5 text-center transition-colors ${
                   isActive
                     ? "animate-pulse-dot border-indigo bg-indigo-light"
-                    : "border-slate-200 bg-white"
+                    : "border-slate-200 bg-card"
                 }`}
               >
                 <span

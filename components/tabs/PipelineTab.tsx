@@ -258,7 +258,9 @@ export default function PipelineTab({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-xl font-semibold text-slate-900">Pipeline</h2>
+        <h2 className="text-xl font-semibold text-slate-900">
+          Opportunity Funnel
+        </h2>
         <p className="text-sm text-slate-500">
           Deal-by-deal funnel for both growth plays. Advance stages
           manually — agents draft reachout and meeting prep automatically
@@ -271,7 +273,7 @@ export default function PipelineTab({
           onClick={() => setPipelineKind("ecomm")}
           className={`rounded-md px-3.5 py-1.5 text-sm font-medium transition-colors ${
             pipelineKind === "ecomm"
-              ? "bg-white text-indigo shadow-sm"
+              ? "bg-card text-indigo shadow-sm"
               : "text-slate-500 hover:text-slate-700"
           }`}
         >
@@ -281,7 +283,7 @@ export default function PipelineTab({
           onClick={() => setPipelineKind("innovation")}
           className={`rounded-md px-3.5 py-1.5 text-sm font-medium transition-colors ${
             pipelineKind === "innovation"
-              ? "bg-white text-indigo shadow-sm"
+              ? "bg-card text-indigo shadow-sm"
               : "text-slate-500 hover:text-slate-700"
           }`}
         >

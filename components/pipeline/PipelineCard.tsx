@@ -54,7 +54,7 @@ export default function PipelineCard({
   const isLost = card.stage === "lost";
 
   return (
-    <div className="relative flex flex-col gap-2.5 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+    <div className="relative flex flex-col gap-2.5 rounded-lg border border-slate-200 bg-card p-3 shadow-sm">
       <div className="flex items-start justify-between gap-2">
         <p className="min-w-0 truncate text-sm font-semibold text-slate-900">
           {card.accountName}
@@ -89,7 +89,7 @@ export default function PipelineCard({
           </svg>
         </button>
         {showBreakdown && (
-          <div className="absolute left-0 top-full z-20 mt-1 w-56 rounded-lg border border-slate-200 bg-white p-3 shadow-lg">
+          <div className="absolute left-0 top-full z-20 mt-1 w-56 rounded-lg border border-slate-200 bg-card p-3 shadow-lg">
             <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
               Value breakdown
             </p>
@@ -161,7 +161,7 @@ export default function PipelineCard({
         <select
           value={card.stage}
           onChange={(e) => onSetStage(card.id, e.target.value as StageId)}
-          className="w-full min-w-0 rounded-md border border-slate-200 bg-white px-1.5 py-1.5 text-xs text-slate-600"
+          className="w-full min-w-0 rounded-md border border-slate-200 bg-card px-1.5 py-1.5 text-xs text-slate-600"
           aria-label={`Set stage for ${card.accountName}`}
         >
           {DROPDOWN_OPTIONS.map((opt) => (
@@ -174,11 +174,11 @@ export default function PipelineCard({
 
       {showDraftModal && card.reachout?.status === "done" && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-6"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6"
           onClick={() => setShowDraftModal(false)}
         >
           <div
-            className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-5 shadow-xl"
+            className="w-full max-w-md rounded-xl border border-slate-200 bg-card p-5 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-3 flex items-center justify-between">

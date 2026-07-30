@@ -70,7 +70,7 @@ export default function QualifiedLeadsTab({
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="text-xl font-semibold text-slate-900">
-          Qualified leads
+          Qualified Leads Module
         </h2>
         <p className="text-sm text-slate-500">
           Deterministic score from six weighted metrics — drag the sliders to

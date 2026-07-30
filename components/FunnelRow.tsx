@@ -155,7 +155,7 @@ export default function FunnelRow({
             </div>
           </div>
 
-          <div className="flex flex-col rounded-lg border border-slate-200 bg-white p-4">
+          <div className="flex flex-col rounded-lg border border-slate-200 bg-card p-4">
             <div className="mb-3 flex items-center justify-between">
               <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Draft email

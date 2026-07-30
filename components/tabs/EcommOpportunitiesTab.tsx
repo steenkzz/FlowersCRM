@@ -134,7 +134,7 @@ export default function EcommOpportunitiesTab({
       <div className="flex flex-wrap items-start justify-between gap-6">
         <div>
           <h2 className="text-xl font-semibold text-slate-900">
-            E-commerce opportunities
+            E-Commerce Opportunities Module
           </h2>
           <p className="max-w-md text-sm text-slate-500">
             Agents visit each account&apos;s website, check whether they
@@ -152,7 +152,7 @@ export default function EcommOpportunitiesTab({
         <select
           value={selectedId}
           onChange={(e) => setSelectedId(e.target.value)}
-          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+          className="rounded-lg border border-slate-200 bg-card px-3 py-2 text-sm text-slate-700"
         >
           {accounts.map((a) => (
             <option key={a.id} value={a.id}>
@@ -166,7 +166,7 @@ export default function EcommOpportunitiesTab({
             if (account) runScan([account]);
           }}
           disabled={isScanning}
-          className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+          className="rounded-lg border border-slate-200 bg-card px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
         >
           Scan this account
         </button>

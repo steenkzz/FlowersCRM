@@ -56,7 +56,7 @@ export default function InnovationPartnersTab({
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="text-xl font-semibold text-slate-900">
-          Innovation partners
+          Creator&apos;s Add-on
         </h2>
         <p className="text-sm text-slate-500">
           Top {TOP_N} accounts by average yearly custom work value —

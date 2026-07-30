@@ -2,14 +2,18 @@
 
 import { useCallback, useState } from "react";
 import UploadZone from "@/components/UploadZone";
+import SummaryTab from "@/components/tabs/SummaryTab";
 import QualifiedLeadsTab from "@/components/tabs/QualifiedLeadsTab";
 import EcommOpportunitiesTab from "@/components/tabs/EcommOpportunitiesTab";
 import InnovationPartnersTab from "@/components/tabs/InnovationPartnersTab";
 import PipelineTab from "@/components/tabs/PipelineTab";
 import AutopilotTab from "@/components/tabs/AutopilotTab";
+import AddonLibraryTab from "@/components/tabs/AddonLibraryTab";
 import { parseExcelFile } from "@/lib/excel";
 import { DEFAULT_PRICING_CONFIG, type PricingConfig } from "@/lib/pricing";
 import { DEFAULT_WEIGHTS } from "@/lib/types";
+import { seedInitialRequests } from "@/lib/autopilotSeed";
+import type { AddonRequest } from "@/lib/autopilotTypes";
 import type {
   Account,
   CacheEntry,
@@ -20,15 +24,39 @@ import type {
   MetricWeights,
 } from "@/lib/types";
 
-type TabId = "leads" | "ecomm" | "innovation" | "pipeline" | "autopilot";
+type TabId =
+  | "summary"
+  | "leads"
+  | "ecomm"
+  | "innovation"
+  | "pipeline"
+  | "autopilot"
+  | "library";
 
 const TABS: { id: TabId; label: string }[] = [
-  { id: "leads", label: "Qualified Leads" },
-  { id: "ecomm", label: "E-Commerce Opportunities" },
-  { id: "innovation", label: "Innovation Partners" },
-  { id: "pipeline", label: "Pipeline" },
-  { id: "autopilot", label: "Autopilot" },
+  { id: "summary", label: "Summary" },
+  { id: "leads", label: "Qualified Leads Module" },
+  { id: "ecomm", label: "E-Commerce Opportunities Module" },
+  { id: "innovation", label: "Creator's Add-on" },
+  { id: "pipeline", label: "Opportunity Funnel" },
+  { id: "autopilot", label: "Add-on Requests" },
+  { id: "library", label: "Add-on Library" },
 ];
+
+function FlowerIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="h-4.5 w-4.5"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="2.4" />
+      <path d="M12 2.5c-1.93 0-3.5 1.57-3.5 3.5 0 1.06.47 2 1.22 2.65A3.49 3.49 0 0 0 8.5 12c0 1.06.47 2 1.22 2.65A3.49 3.49 0 0 0 8.5 18c0 1.93 1.57 3.5 3.5 3.5s3.5-1.57 3.5-3.5c0-1.06-.47-2-1.22-2.65A3.49 3.49 0 0 0 15.5 12c0-1.06-.47-2-1.22-2.65A3.49 3.49 0 0 0 15.5 6c0-1.93-1.57-3.5-3.5-3.5Zm0 2c.83 0 1.5.67 1.5 1.5S12.83 7.5 12 7.5 10.5 6.83 10.5 6 11.17 4.5 12 4.5Zm0 15c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5Z" />
+    </svg>
+  );
+}
 
 export default function Home() {
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -36,7 +64,7 @@ export default function Home() {
     ...DEFAULT_PRICING_CONFIG,
   });
   const [weights, setWeights] = useState<MetricWeights>({ ...DEFAULT_WEIGHTS });
-  const [activeTab, setActiveTab] = useState<TabId>("leads");
+  const [activeTab, setActiveTab] = useState<TabId>("summary");
   const [isParsing, setIsParsing] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -46,6 +74,10 @@ export default function Home() {
   // in-flight or completed work.
   const [ecommScanCache, setEcommScanCache] = useState<EcommScanCache>({});
   const [inviteCache, setInviteCache] = useState<InviteCache>({});
+
+  // Lifted so the Add-on Library and Summary tabs can read what Add-on
+  // Requests has shipped, without owning any of its processing logic.
+  const [addonRequests, setAddonRequests] = useState<AddonRequest[]>([]);
 
   const updateEcommScanCache = useCallback(
     (accountId: string, entry: CacheEntry<EcommScanResult>) => {
@@ -79,6 +111,7 @@ export default function Home() {
         setAccounts(parsed);
         setPricingConfig(parsedPricing);
         setFileName(file.name);
+        setAddonRequests(seedInitialRequests(parsed));
       }
     } catch {
       setParseError(
@@ -94,26 +127,19 @@ export default function Home() {
     setPricingConfig({ ...DEFAULT_PRICING_CONFIG });
     setEcommScanCache({});
     setInviteCache({});
+    setAddonRequests([]);
     setFileName(null);
     setWeights({ ...DEFAULT_WEIGHTS });
-    setActiveTab("leads");
+    setActiveTab("summary");
   }, []);
 
   return (
-    <div className="flex flex-1 flex-col bg-white">
+    <div className="flex flex-1 flex-col bg-canvas">
       <header className="border-b border-slate-100">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
+        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-5">
           <div className="flex items-center gap-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-indigo text-white">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="h-4.5 w-4.5"
-                aria-hidden="true"
-              >
-                <path d="M12 2c-1.66 0-3 1.34-3 3 0 .61.19 1.18.5 1.65C8.02 6.24 7 7.5 7 9c0 1.5 1.02 2.76 2.5 3.35A2.99 2.99 0 0 0 9 14c0 1.66 1.34 3 3 3s3-1.34 3-3c0-.61-.19-1.18-.5-1.65C15.98 11.76 17 10.5 17 9c0-1.5-1.02-2.76-2.5-3.35.31-.47.5-1.04.5-1.65 0-1.66-1.34-3-3-3Zm0 13c-2.76 0-5 1.79-5 4v3h10v-3c0-2.21-2.24-4-5-4Z" />
-              </svg>
+              <FlowerIcon />
             </div>
             <span className="text-sm font-semibold tracking-tight text-slate-900">
               FlowersCRM
@@ -132,12 +158,12 @@ export default function Home() {
           )}
         </div>
         {accounts.length > 0 && (
-          <div className="mx-auto flex max-w-6xl gap-1 px-6">
+          <div className="mx-auto flex max-w-[1400px] gap-1 overflow-x-auto px-6">
             {TABS.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
+                className={`whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
                   activeTab === tab.id
                     ? "border-indigo text-indigo"
                     : "border-transparent text-slate-500 hover:text-slate-700"
@@ -150,7 +176,7 @@ export default function Home() {
         )}
       </header>
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-6 py-12">
+      <main className="mx-auto flex w-full max-w-[1400px] flex-1 flex-col gap-10 px-6 py-12">
         {accounts.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-8 py-10 text-center">
             <div className="flex flex-col items-center gap-3">
@@ -171,9 +197,18 @@ export default function Home() {
           </div>
         ) : (
           <>
-            {/* All four tabs stay mounted so scan results, AI explanations,
-                drafted invitations, and pipeline stage moves survive
+            {/* All tabs stay mounted so scan results, AI explanations, drafted
+                invitations, pipeline stage moves, and add-on requests survive
                 switching tabs — only visibility toggles. */}
+            <div className={activeTab === "summary" ? "contents" : "hidden"}>
+              <SummaryTab
+                accounts={accounts}
+                pricingConfig={pricingConfig}
+                ecommScanCache={ecommScanCache}
+                addonRequests={addonRequests}
+                onNavigate={setActiveTab}
+              />
+            </div>
             <div className={activeTab === "leads" ? "contents" : "hidden"}>
               <QualifiedLeadsTab
                 accounts={accounts}
@@ -207,7 +242,15 @@ export default function Home() {
               />
             </div>
             <div className={activeTab === "autopilot" ? "contents" : "hidden"}>
-              <AutopilotTab accounts={accounts} pricingConfig={pricingConfig} />
+              <AutopilotTab
+                accounts={accounts}
+                pricingConfig={pricingConfig}
+                requests={addonRequests}
+                onRequestsChange={setAddonRequests}
+              />
+            </div>
+            <div className={activeTab === "library" ? "contents" : "hidden"}>
+              <AddonLibraryTab requests={addonRequests} />
             </div>
           </>
         )}
